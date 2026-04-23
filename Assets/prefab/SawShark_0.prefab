@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 8946674951843846377}
   - component: {fileID: 6526227317925446043}
   - component: {fileID: 3151712293866617583}
-  - component: {fileID: -633375394635262226}
+  - component: {fileID: 2726258894987424779}
   m_Layer: 0
   m_Name: SawShark_0
   m_TagString: Untagged
@@ -190,7 +190,7 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
---- !u!114 &-633375394635262226
+--- !u!114 &2726258894987424779
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -203,7 +203,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyFish
   patrolSpeed: 2
-  chaseSpeed: 2
-  patrolRange: 2
-  chaseRange: 4
+  chaseSpeed: 1.5
+  patrolRange: 3
+  chaseRange: 3
   damageAmount: 10

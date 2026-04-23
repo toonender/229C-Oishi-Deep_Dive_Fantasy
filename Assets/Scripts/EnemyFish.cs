@@ -4,7 +4,7 @@ using UnityEngine;
 public class EnemyFish : MonoBehaviour
 {
     [Header("การเคลื่อนที่")]
-    public float patrolSpeed = 2f;    // ความเร็วตอนลาดตระเวน
+    public float patrolSpeed = 2f;    // ความเร็วตอนลาดตระเวน (และตอนกลับจุดเกิด)
     public float chaseSpeed = 3.5f;   // ความเร็วตอนไล่ล่าผู้เล่น
     public float patrolRange = 3f;
     public float chaseRange = 5f;     // ระยะที่ปลาจะเริ่มไล่ล่า
@@ -16,6 +16,7 @@ public class EnemyFish : MonoBehaviour
 
     void Start()
     {
+        // บันทึกจุดเริ่มต้นเอาไว้ เพื่อให้มันรู้ว่าจะต้องว่ายกลับมาที่ไหน
         startPos = transform.position;
         GetComponent<Collider2D>().isTrigger = true;
 
@@ -30,26 +31,40 @@ public class EnemyFish : MonoBehaviour
     void Update()
     {
         // เช็คว่าผู้เล่นอยู่ในระยะไล่ล่าหรือไม่
-        if (playerTransform != null && Vector2.Distance(transform.position, playerTransform.position) <= chaseRange)
+        bool isPlayerInRange = playerTransform != null && Vector2.Distance(transform.position, playerTransform.position) <= chaseRange;
+
+        if (isPlayerInRange)
         {
-            // ไล่ล่าผู้เล่น
-            Vector2 directionToPlayer = (playerTransform.position - transform.position).normalized;
+            // ── โหมด 1: ไล่ล่าผู้เล่น (Chasing) ─────────────────────────
             transform.position = Vector2.MoveTowards(transform.position, playerTransform.position, chaseSpeed * Time.deltaTime);
 
             // หันหน้าหาผู้เล่น
-            direction = directionToPlayer.x > 0 ? 1 : -1;
+            direction = playerTransform.position.x > transform.position.x ? 1 : -1;
         }
         else
         {
-            // เดินซ้าย-ขวา ลาดตระเวน
-            transform.Translate(Vector2.right * direction * patrolSpeed * Time.deltaTime);
+            // เช็คว่าตอนนี้อยู่ห่างจากจุดเกิด (startPos) มากกว่า 0.1 หน่วยหรือไม่
+            if (Vector2.Distance(transform.position, startPos) > 0.1f)
+            {
+                // ── โหมด 2: ว่ายกลับจุดเดิม (Returning) ──────────────────
+                transform.position = Vector2.MoveTowards(transform.position, startPos, patrolSpeed * Time.deltaTime);
 
-            float distFromStart = transform.position.x - startPos.x;
-            if (distFromStart >= patrolRange) direction = -1;
-            if (distFromStart <= -patrolRange) direction = 1;
+                // หันหน้ากลับไปทางจุดเกิด
+                direction = startPos.x > transform.position.x ? 1 : -1;
+            }
+            else
+            {
+                // ── โหมด 3: ลาดตระเวนปกติ (Patrolling) ──────────────────
+                // ถึงจุดเกิดแล้ว เริ่มเดินซ้าย-ขวาตามเดิม
+                transform.Translate(Vector2.right * direction * patrolSpeed * Time.deltaTime);
+
+                float distFromStart = transform.position.x - startPos.x;
+                if (distFromStart >= patrolRange) direction = -1;
+                if (distFromStart <= -patrolRange) direction = 1;
+            }
         }
 
-        // หมุน sprite ให้หันตามทิศ
+        // หมุน sprite ให้หันตามทิศ (ซ้าย-ขวา)
         Vector3 scale = transform.localScale;
         scale.x = Mathf.Abs(scale.x) * direction;
         transform.localScale = scale;
@@ -64,7 +79,7 @@ public class EnemyFish : MonoBehaviour
         if (player != null)
         {
             player.TakeDamage(damageAmount); // สั่งลดเลือด Player
-            Destroy(gameObject);             // <-- เพิ่มบรรทัดนี้ ศัตรูจะทำลายตัวเองและหายไปทันที!
+            Destroy(gameObject);             // ศัตรูทำลายตัวเองและหายไป
         }
     }
 }

@@ -42,6 +42,7 @@ public class PlayerController : MonoBehaviour
     private float invincibleTimer;
     private float horizontalInput;
 
+
     [HideInInspector] public float externalForceX = 0f; // เอาไว้รับแรงจาก CurrentZone
     void Start()
     {
@@ -94,18 +95,6 @@ public class PlayerController : MonoBehaviour
         UpdateUI();
     }
 
-    void UpdateUI()
-    {
-        if (hpSlider) hpSlider.value = hp;
-        if (hpText) hpText.text = "HP: " + Mathf.RoundToInt(hp);
-        if (oxygenSlider) oxygenSlider.value = oxygen;
-        if (oxygenText) oxygenText.text = "O2: " + Mathf.RoundToInt(oxygen);
-
-        float depth = Mathf.Max(0f, -transform.position.y);
-        if (depthText) depthText.text = "Depth: " + Mathf.RoundToInt(depth) + " m";
-        if (forceText) forceText.text = "Net Force: " + Mathf.RoundToInt(netForce) + " N";
-    }
-
     void ApplyPhysics()
     {
         float fWeight = playerMass * gravity;
@@ -142,6 +131,18 @@ public class PlayerController : MonoBehaviour
         float clampedVX = Mathf.Clamp(rb.linearVelocity.x, -currentMaxSpeedX, currentMaxSpeedX);
 
         rb.linearVelocity = new Vector2(clampedVX, clampedVY);
+    }
+
+    void UpdateUI()
+    {
+        if (hpSlider) hpSlider.value = hp;
+        if (hpText) hpText.text = "HP: " + Mathf.RoundToInt(hp);
+        if (oxygenSlider) oxygenSlider.value = oxygen;
+        if (oxygenText) oxygenText.text = "O2: " + Mathf.RoundToInt(oxygen);
+
+        float depth = Mathf.Max(0f, -transform.position.y);
+        if (depthText) depthText.text = "Depth: " + Mathf.RoundToInt(depth) + " m";
+        if (forceText) forceText.text = "Net Force: " + Mathf.RoundToInt(netForce) + " N";
     }
 
     public void TakeDamage(float amount)

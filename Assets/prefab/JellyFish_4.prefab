@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 5746891105216151413}
   - component: {fileID: -129783640340216147}
   - component: {fileID: 4918062438650012942}
+  - component: {fileID: 2377585445576415703}
   m_Layer: 0
   m_Name: JellyFish_4
   m_TagString: Untagged
@@ -189,3 +190,18 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!114 &2377585445576415703
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3865308554550117749}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19fa1b0c70a8b2e428567b3af846af9c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyJellyfish
+  amplitude: 1.5
+  frequency: 1
+  damageAmount: 20
