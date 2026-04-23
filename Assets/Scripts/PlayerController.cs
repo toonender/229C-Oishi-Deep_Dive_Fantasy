@@ -1,3 +1,4 @@
+using System.Collections; // <-- เพิ่ม Library นี้สำหรับการทำ Coroutine
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,14 +8,14 @@ public class PlayerController : MonoBehaviour
     [Header("Physics — ปรับค่าได้ใน Inspector")]
     public float playerMass = 70f;
     public float gravity = 9.81f;
-    public float baseBuoyancy = 0.0f;   // <-- ลดลง ให้จมตอนไม่กด
-    public float breathBuoyancy = 1.4f;    // <-- เพิ่มขึ้น ให้ลอยชัดตอนกด
-    public float dragCoefficient = 3.0f;    // <-- เพิ่ม drag ให้ movement นุ่มขึ้น
+    public float baseBuoyancy = 0.0f;
+    public float breathBuoyancy = 1.4f;
+    public float dragCoefficient = 3.0f;
     public float maxVerticalSpeed = 5f;
 
     [Header("Horizontal Movement")]
-    public float horizontalForce = 200f;    // แรงกด A/D
-    public float maxHorizontalSpeed = 4f;    // จำกัดความเร็วแนวนอน
+    public float horizontalForce = 200f;
+    public float maxHorizontalSpeed = 4f;
 
     [Header("Oxygen System")]
     public float maxOxygen = 100f;
@@ -36,15 +37,17 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float netForce;
 
     private Rigidbody2D rb;
+    private SpriteRenderer spriteRenderer; // <-- เพิ่มตัวแปรเก็บภาพของ Player
     private bool isAlive = true;
     private float invincibleTimer;
     private float horizontalInput;
 
-    [HideInInspector] public float externalForceX;
-
+    [HideInInspector] public float externalForceX = 0f; // เอาไว้รับแรงจาก CurrentZone
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        spriteRenderer = GetComponent<SpriteRenderer>(); // <-- ดึง SpriteRenderer มาใช้งาน
+
         rb.gravityScale = 0f;
         oxygen = maxOxygen;
         if (hpSlider) hpSlider.maxValue = 100f;
@@ -71,7 +74,15 @@ public class PlayerController : MonoBehaviour
         oxygen = Mathf.Clamp(oxygen, 0f, maxOxygen);
 
         // ── รับ Input แนวนอน A/D หรือ Arrow ──────────────────
-        horizontalInput = Input.GetAxisRaw("Horizontal"); // -1, 0, 1
+        horizontalInput = Input.GetAxisRaw("Horizontal");
+
+        // ── ระบบ Flip หันซ้าย-ขวา ─────────────────────────────
+        if (horizontalInput != 0)
+        {
+            Vector3 scale = transform.localScale;
+            scale.x = Mathf.Abs(scale.x) * Mathf.Sign(horizontalInput);
+            transform.localScale = scale;
+        }
 
         if (invincibleTimer > 0f) invincibleTimer -= Time.deltaTime;
     }
@@ -81,50 +92,6 @@ public class PlayerController : MonoBehaviour
         if (!isAlive) return;
         ApplyPhysics();
         UpdateUI();
-        externalForceX = 0f;
-    }
-
-    void ApplyPhysics()
-    {
-        // ── แรงโน้มถ่วง (ลง) ──────────────────────────────────
-        // F_weight = m × g
-        float fWeight = playerMass * gravity;
-
-        // ── แรงลอยตัว Buoyancy (ขึ้น) ─────────────────────────
-        // F_buoyancy = m × g × multiplier
-        // baseBuoyancy < 1.0 → จมสุทธิ / breathBuoyancy > 1.0 → ลอยสุทธิ
-        float mult = isBreathing ? breathBuoyancy : baseBuoyancy;
-        float fBuoyancy = playerMass * gravity * mult;
-
-        // ── แรงต้านน้ำ Drag แนวตั้ง (ต้านทิศเคลื่อนที่) ───────
-        // F_drag = -k × v
-        float fDrag = -dragCoefficient * rb.linearVelocity.y;
-
-        // ── Net Force แนวตั้ง ──────────────────────────────────
-        // ลบ Time.fixedDeltaTime ออก — Unity คิดให้อยู่แล้วใน ForceMode2D.Force
-        netForce = fBuoyancy - fWeight + fDrag;
-        rb.AddForce(new Vector2(0f, netForce));
-
-        // ── แรงแนวนอน A/D ─────────────────────────────────────
-        if (Mathf.Abs(horizontalInput) > 0.01f)
-        {
-            float fHorizontal = horizontalInput * horizontalForce;
-            rb.AddForce(new Vector2(fHorizontal, 0f));
-        }
-
-        // ── แรงกระแสน้ำ (มาจาก CurrentZone) ──────────────────
-        if (Mathf.Abs(externalForceX) > 0.01f)
-            rb.AddForce(new Vector2(externalForceX, 0f));
-
-        // ── Drag แนวนอน (หน่วงเมื่อไม่กด) ───────────────────
-        // ทำให้ไม่ไถลไปเรื่อยๆ
-        float dragX = -dragCoefficient * rb.linearVelocity.x;
-        rb.AddForce(new Vector2(dragX, 0f));
-
-        // ── Clamp ความเร็ว ─────────────────────────────────────
-        float clampedVY = Mathf.Clamp(rb.linearVelocity.y, -maxVerticalSpeed, maxVerticalSpeed);
-        float clampedVX = Mathf.Clamp(rb.linearVelocity.x, -maxHorizontalSpeed, maxHorizontalSpeed);
-        rb.linearVelocity = new Vector2(clampedVX, clampedVY);
     }
 
     void UpdateUI()
@@ -139,17 +106,86 @@ public class PlayerController : MonoBehaviour
         if (forceText) forceText.text = "Net Force: " + Mathf.RoundToInt(netForce) + " N";
     }
 
+    void ApplyPhysics()
+    {
+        float fWeight = playerMass * gravity;
+        float mult = isBreathing ? breathBuoyancy : baseBuoyancy;
+        float fBuoyancy = playerMass * gravity * mult;
+        float fDrag = -dragCoefficient * rb.linearVelocity.y;
+
+        netForce = fBuoyancy - fWeight + fDrag;
+        rb.AddForce(new Vector2(0f, netForce));
+
+        // ── แรงแนวนอน A/D ─────────────────────────────────────
+        if (Mathf.Abs(horizontalInput) > 0.01f)
+        {
+            float fHorizontal = horizontalInput * horizontalForce;
+            rb.AddForce(new Vector2(fHorizontal, 0f));
+        }
+
+        // ── แรงกระแสน้ำจาก CurrentZone ────────────────────────
+        if (Mathf.Abs(externalForceX) > 0.01f)
+        {
+            // คำนวณ F = m * a (เอามวลมาคูณความแรงกระแสน้ำ)
+            rb.AddForce(new Vector2(externalForceX * playerMass, 0f));
+        }
+
+        float dragX = -dragCoefficient * rb.linearVelocity.x;
+        rb.AddForce(new Vector2(dragX, 0f));
+
+        // ── Clamp ความเร็ว ─────────────────────────────────────
+        float clampedVY = Mathf.Clamp(rb.linearVelocity.y, -maxVerticalSpeed, maxVerticalSpeed);
+
+        // สำคัญ: เราเพิ่มการบวกค่ากระแสน้ำเข้าไปใน max speed ด้วย 
+        // เพื่อให้เวลาโดนน้ำพัด ตัวละครสามารถไหลได้เร็วกว่าความเร็วว่ายน้ำปกติ
+        float currentMaxSpeedX = maxHorizontalSpeed + Mathf.Abs(externalForceX * 0.5f);
+        float clampedVX = Mathf.Clamp(rb.linearVelocity.x, -currentMaxSpeedX, currentMaxSpeedX);
+
+        rb.linearVelocity = new Vector2(clampedVX, clampedVY);
+    }
+
     public void TakeDamage(float amount)
     {
         if (invincibleTimer > 0f) return;
+
         hp -= amount;
         invincibleTimer = 1.5f;
+
+        // สั่งให้ Coroutine ทำงานเมื่อโดนดาเมจ
+        if (spriteRenderer != null)
+        {
+            StartCoroutine(FlashRedRoutine());
+        }
+
         if (hp <= 0f)
         {
             hp = 0f;
             isAlive = false;
             FindObjectOfType<GameManager>().TriggerGameOver();
         }
+    }
+
+    // ── ฟังก์ชัน Coroutine สำหรับทำเอฟเฟกต์กระพริบ ─────────────────
+    private IEnumerator FlashRedRoutine()
+    {
+        float blinkDuration = 1.5f; // เวลาสอดคล้องกับ invincibleTimer
+        float elapsed = 0f;
+
+        while (elapsed < blinkDuration)
+        {
+            // เปลี่ยนเป็นสีแดง
+            spriteRenderer.color = Color.red;
+            yield return new WaitForSeconds(0.1f);
+
+            // เปลี่ยนกลับเป็นสีปกติ (สีขาวหมายถึงสไปรต์สีออริจินัล)
+            spriteRenderer.color = Color.white;
+            yield return new WaitForSeconds(0.1f);
+
+            elapsed += 0.2f; // รวมเวลาที่ผ่านไป (0.1 + 0.1)
+        }
+
+        // เผื่อความชัวร์ เซ็ตสีให้กลับเป็นปกติเมื่อจบลูป
+        spriteRenderer.color = Color.white;
     }
 
     void OnTriggerEnter2D(Collider2D other)
