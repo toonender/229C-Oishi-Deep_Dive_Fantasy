@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 6941054430604727609}
   - component: {fileID: 7391607377202436076}
   - component: {fileID: 4161441759085412967}
-  - component: {fileID: 7949118639528441905}
+  - component: {fileID: 3517150974662950469}
   m_Layer: 0
   m_Name: Shark_0
   m_TagString: Untagged
@@ -189,8 +189,8 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 0
---- !u!114 &7949118639528441905
+  m_Constraints: 4
+--- !u!114 &3517150974662950469
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -203,7 +203,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyFish
   patrolSpeed: 2
-  chaseSpeed: 2.5
-  patrolRange: 5
+  chaseSpeed: 3.5
+  patrolRange: 3
   chaseRange: 5
-  damageAmount: 20
+  damageAmount: 25

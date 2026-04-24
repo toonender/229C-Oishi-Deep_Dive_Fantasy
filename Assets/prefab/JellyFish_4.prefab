@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 5746891105216151413}
   - component: {fileID: -129783640340216147}
   - component: {fileID: 4918062438650012942}
-  - component: {fileID: 2377585445576415703}
+  - component: {fileID: -170693129227247174}
   m_Layer: 0
   m_Name: JellyFish_4
   m_TagString: Untagged
@@ -189,8 +189,8 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 0
---- !u!114 &2377585445576415703
+  m_Constraints: 4
+--- !u!114 &-170693129227247174
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

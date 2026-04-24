@@ -1,11 +1,10 @@
 using UnityEngine;
 
-[RequireComponent(typeof(Collider2D))]
 public class EnemyJellyfish : MonoBehaviour
 {
     [Header("การเคลื่อนที่แบบ Sine Wave")]
-    public float amplitude = 1.5f;
-    public float frequency = 1.0f;
+    public float amplitude = 1.5f;  // ขนาดการแกว่ง (หน่วย Unity)
+    public float frequency = 1.0f;  // ความเร็วการแกว่ง
     public float damageAmount = 20f;
 
     private Vector2 startPos;
@@ -14,15 +13,13 @@ public class EnemyJellyfish : MonoBehaviour
     void Start()
     {
         startPos = transform.position;
-        timeOffset = Random.Range(0f, Mathf.PI * 2f);
-
-        // บังคับเปิด isTrigger ป้องกันการลืมเซ็ตใน Editor
-        GetComponent<Collider2D>().isTrigger = true;
+        timeOffset = Random.Range(0f, Mathf.PI * 2f); // แต่ละตัวแกว่งไม่พร้อมกัน
     }
 
-    void FixedUpdate() // ใช้ FixedUpdate เมื่อมีการเช็คการชน
+    void Update()
     {
-        float newY = startPos.y + amplitude * Mathf.Sin(2f * Mathf.PI * frequency * Time.fixedTime + timeOffset);
+        // y = A × sin(2πft + offset)  → oscillation จริง
+        float newY = startPos.y + amplitude * Mathf.Sin(2f * Mathf.PI * frequency * Time.time + timeOffset);
         transform.position = new Vector2(transform.position.x, newY);
     }
 

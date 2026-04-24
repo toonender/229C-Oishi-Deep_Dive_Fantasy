@@ -42,8 +42,6 @@ public class PlayerController : MonoBehaviour
     private float invincibleTimer;
     private float horizontalInput;
 
-
-    [HideInInspector] public float externalForceX = 0f; // เอาไว้รับแรงจาก CurrentZone
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -54,6 +52,8 @@ public class PlayerController : MonoBehaviour
         if (hpSlider) hpSlider.maxValue = 100f;
         if (oxygenSlider) oxygenSlider.maxValue = maxOxygen;
     }
+
+    [HideInInspector] public float externalForceX = 0f; // เอาไว้รับแรงจาก CurrentZone
 
     void Update()
     {
@@ -105,31 +105,17 @@ public class PlayerController : MonoBehaviour
         netForce = fBuoyancy - fWeight + fDrag;
         rb.AddForce(new Vector2(0f, netForce));
 
-        // ── แรงแนวนอน A/D ─────────────────────────────────────
         if (Mathf.Abs(horizontalInput) > 0.01f)
         {
             float fHorizontal = horizontalInput * horizontalForce;
             rb.AddForce(new Vector2(fHorizontal, 0f));
         }
 
-        // ── แรงกระแสน้ำจาก CurrentZone ────────────────────────
-        if (Mathf.Abs(externalForceX) > 0.01f)
-        {
-            // คำนวณ F = m * a (เอามวลมาคูณความแรงกระแสน้ำ)
-            rb.AddForce(new Vector2(externalForceX * playerMass, 0f));
-        }
-
         float dragX = -dragCoefficient * rb.linearVelocity.x;
         rb.AddForce(new Vector2(dragX, 0f));
 
-        // ── Clamp ความเร็ว ─────────────────────────────────────
         float clampedVY = Mathf.Clamp(rb.linearVelocity.y, -maxVerticalSpeed, maxVerticalSpeed);
-
-        // สำคัญ: เราเพิ่มการบวกค่ากระแสน้ำเข้าไปใน max speed ด้วย 
-        // เพื่อให้เวลาโดนน้ำพัด ตัวละครสามารถไหลได้เร็วกว่าความเร็วว่ายน้ำปกติ
-        float currentMaxSpeedX = maxHorizontalSpeed + Mathf.Abs(externalForceX * 0.5f);
-        float clampedVX = Mathf.Clamp(rb.linearVelocity.x, -currentMaxSpeedX, currentMaxSpeedX);
-
+        float clampedVX = Mathf.Clamp(rb.linearVelocity.x, -maxHorizontalSpeed, maxHorizontalSpeed);
         rb.linearVelocity = new Vector2(clampedVX, clampedVY);
     }
 
@@ -138,7 +124,7 @@ public class PlayerController : MonoBehaviour
         if (hpSlider) hpSlider.value = hp;
         if (hpText) hpText.text = "HP: " + Mathf.RoundToInt(hp);
         if (oxygenSlider) oxygenSlider.value = oxygen;
-        if (oxygenText) oxygenText.text = "O2: " + Mathf.RoundToInt(oxygen);
+        if (oxygenText) oxygenText.text = "Stamina: " + Mathf.RoundToInt(oxygen);
 
         float depth = Mathf.Max(0f, -transform.position.y);
         if (depthText) depthText.text = "Depth: " + Mathf.RoundToInt(depth) + " m";
