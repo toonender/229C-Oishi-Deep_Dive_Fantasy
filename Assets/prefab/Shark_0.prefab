@@ -203,7 +203,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyFish
   patrolSpeed: 2
-  chaseSpeed: 3.5
+  chaseSpeed: 2
   patrolRange: 3
-  chaseRange: 5
+  chaseRange: 3
   damageAmount: 25

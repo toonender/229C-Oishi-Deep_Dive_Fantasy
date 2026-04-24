@@ -202,8 +202,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 49649476fe7fef24a8f0bf383968da56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyFish
-  patrolSpeed: 2
-  chaseSpeed: 3.5
-  patrolRange: 3
-  chaseRange: 5
-  damageAmount: 25
+  patrolSpeed: 0.5
+  chaseSpeed: 0.7
+  patrolRange: 2
+  chaseRange: 1
+  damageAmount: 5
