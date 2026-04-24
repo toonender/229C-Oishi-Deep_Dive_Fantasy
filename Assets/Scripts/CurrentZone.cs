@@ -1,33 +1,35 @@
 using UnityEngine;
 
-// ติด Script นี้กับ GameObject ที่มี Collider2D (IsTrigger = true)
-// แล้ววาง Zone ให้ทับกับบริเวณที่มีกระแสน้ำ
 [RequireComponent(typeof(Collider2D))]
 public class CurrentZone : MonoBehaviour
 {
-    [Header("กระแสน้ำ")]
-    [Tooltip("บวก = ขวา, ลบ = ซ้าย")]
-    public float currentStrength = 5f;  // ความแรงกระแสน้ำ (m/s²)
+    [Header("ทิศทางและความแรงกระแสน้ำ")]
+    [Tooltip("ใส่ค่าบวก (เช่น 10) = พัดไปขวา \nใส่ค่าติดลบ (เช่น -10) = พัดไปซ้าย")]
+    public float currentStrength = 5f;
 
     void Start()
     {
-        // ตรวจสอบว่า Collider เป็น Trigger
-        Collider2D col = GetComponent<Collider2D>();
-        col.isTrigger = true;
+        // บังคับให้เป็น Trigger เสมอ
+        GetComponent<Collider2D>().isTrigger = true;
     }
 
-    void OnTriggerStay2D(Collider2D other)
+    void OnTriggerEnter2D(Collider2D other)
     {
-        if (!other.CompareTag("Player")) return;
+        if (other.CompareTag("Player"))
+        {
+            PlayerController player = other.GetComponent<PlayerController>();
+            // บวกค่าแรงน้ำเข้าไป (ถ้าเป็นลบ มันก็จะกลายเป็นการผลักไปทางซ้ายเองโดยอัตโนมัติ)
+            if (player != null) player.externalForceX += currentStrength;
+        }
+    }
 
-        PlayerController player = other.GetComponent<PlayerController>();
-        if (player == null) return;
-
-        // F_current = strength × mass  (F = ma → a = strength)
-        float mass = player.playerMass;
-        float fCurrent = currentStrength * mass;
-
-        // สะสมแรงใน PlayerController (ถูก AddForce ใน FixedUpdate)
-        player.externalForceX += fCurrent;
+    void OnTriggerExit2D(Collider2D other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            PlayerController player = other.GetComponent<PlayerController>();
+            // ลบค่าแรงน้ำออกเมื่อหลุดโซน
+            if (player != null) player.externalForceX -= currentStrength;
+        }
     }
 }

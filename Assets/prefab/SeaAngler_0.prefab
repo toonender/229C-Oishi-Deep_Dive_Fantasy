@@ -14,7 +14,6 @@ GameObject:
   - component: {fileID: 5739141469658919181}
   - component: {fileID: 821649742352668464}
   - component: {fileID: 342158678581938907}
-  - component: {fileID: 3475470338557960201}
   m_Layer: 0
   m_Name: SeaAngler_0
   m_TagString: Untagged
@@ -192,23 +191,6 @@ Rigidbody2D:
   m_CollisionDetection: 0
   m_Constraints: 4
 --- !u!114 &342158678581938907
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 37953749654769554}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 49649476fe7fef24a8f0bf383968da56, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyFish
-  patrolSpeed: 2
-  chaseSpeed: 3.5
-  patrolRange: 3
-  chaseRange: 5
-  damageAmount: 25
---- !u!114 &3475470338557960201
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
