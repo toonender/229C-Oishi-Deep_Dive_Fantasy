@@ -12,6 +12,7 @@ public class PlayerController : MonoBehaviour
     public float breathBuoyancy = 1.4f;
     public float dragCoefficient = 3.0f;
     public float maxVerticalSpeed = 5f;
+    public float surfaceY = 0f; // ใส่ค่า Y ของ WinTrigger ใน Inspector
 
     [Header("Horizontal Movement")]
     public float horizontalForce = 200f;
@@ -42,7 +43,7 @@ public class PlayerController : MonoBehaviour
     private float invincibleTimer;
     private float horizontalInput;
 
-    [HideInInspector] public float externalForceX = 0f; // เอาไว้รับแรงจาก CurrentZone
+    [HideInInspector] public float externalForceX = 0f;
 
     void Start()
     {
@@ -59,7 +60,6 @@ public class PlayerController : MonoBehaviour
     {
         if (!isAlive) return;
 
-        // ── Oxygen + Breathing ─────────────────────────────────
         bool holdingSpace = Input.GetKey(KeyCode.Space);
 
         if (holdingSpace && oxygen > 0f)
@@ -74,10 +74,8 @@ public class PlayerController : MonoBehaviour
         }
         oxygen = Mathf.Clamp(oxygen, 0f, maxOxygen);
 
-        // ── รับ Input แนวนอน A/D หรือ Arrow ──────────────────
         horizontalInput = Input.GetAxisRaw("Horizontal");
 
-        // ── ระบบ Flip หันซ้าย-ขวา ─────────────────────────────
         if (horizontalInput != 0)
         {
             Vector3 scale = transform.localScale;
@@ -105,27 +103,21 @@ public class PlayerController : MonoBehaviour
         netForce = fBuoyancy - fWeight + fDrag;
         rb.AddForce(new Vector2(0f, netForce));
 
-        // ── แรงแนวนอน A/D ─────────────────────────────────────
         if (Mathf.Abs(horizontalInput) > 0.01f)
         {
             float fHorizontal = horizontalInput * horizontalForce;
             rb.AddForce(new Vector2(fHorizontal, 0f));
         }
 
-        // ── แรงกระแสน้ำจาก CurrentZone (ส่วนที่เพิ่มเข้ามาใหม่) ────────
         if (Mathf.Abs(externalForceX) > 0.01f)
         {
-            // F = m * a
             rb.AddForce(new Vector2(externalForceX * playerMass, 0f));
         }
 
         float dragX = -dragCoefficient * rb.linearVelocity.x;
         rb.AddForce(new Vector2(dragX, 0f));
 
-        // ── Clamp ความเร็ว ─────────────────────────────────────
         float clampedVY = Mathf.Clamp(rb.linearVelocity.y, -maxVerticalSpeed, maxVerticalSpeed);
-
-        // ขยายขีดจำกัดความเร็วเมื่อโดนกระแสน้ำพัด
         float currentMaxSpeedX = maxHorizontalSpeed + Mathf.Abs(externalForceX * 0.5f);
         float clampedVX = Mathf.Clamp(rb.linearVelocity.x, -currentMaxSpeedX, currentMaxSpeedX);
 
@@ -139,7 +131,7 @@ public class PlayerController : MonoBehaviour
         if (oxygenSlider) oxygenSlider.value = oxygen;
         if (oxygenText) oxygenText.text = "Stamina: " + Mathf.RoundToInt(oxygen);
 
-        float depth = Mathf.Max(0f, -transform.position.y);
+        float depth = Mathf.Max(0f, surfaceY - transform.position.y); // แก้แล้ว
         if (depthText) depthText.text = "Depth: " + Mathf.RoundToInt(depth) + " m";
         if (forceText) forceText.text = "Net Force: " + Mathf.RoundToInt(netForce) + " N";
     }
